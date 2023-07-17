@@ -1,12 +1,14 @@
 import numpy as np
 import matplotlib.pyplot as plt
+
+
 from pyvista import Plotter
 from laser import *
 from layers import *
 
 
 # Laser setup
-l1_size = 100
+l1_size = 200
 l1_fwhm = 20
 l1_id = 100
 
@@ -18,7 +20,8 @@ lasers = [l1]
 # Layers setup
 
 layers = Layers(lasers=lasers)
-layers.add_layer(0, 150, (-15, 0, 0))
+layers.add_layer(0, 200, (-15, 0, 0))
+layers.add_layer(0, 100, (15, 0, 30))
 
 
 plotter = Plotter()

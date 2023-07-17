@@ -17,7 +17,6 @@ class Layers:
                           initial_angles=angles)
         prev_arr = prev_layers.arr3d
         new_arr = new_layer.arr3d
-        
         stitch1 = np.ndarray.flatten(
             np.array(
                 np.where(prev_arr[len(prev_arr)-1, :, :]==np.max(prev_arr[len(prev_arr)-1, :, :]))
@@ -28,9 +27,8 @@ class Layers:
                 np.where(new_arr[0, :, :]==np.max(new_arr[0, :, :]))
                 )
             )
-        
-        aligned = new_layer.shift([0]+list(stitch1-stitch2))
-        self.lasers[laser_index].arr3d = np.vstack((prev_arr, new_arr))
+        new_layer.shift([0]+list(stitch1-stitch2))
+        self.lasers[laser_index].arr3d = np.vstack((prev_arr, new_layer.arr3d))
 
     def replace_layer(self):
         pass
