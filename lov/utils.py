@@ -1,4 +1,4 @@
-__all__=['makeGaussian', 'clipped_arr', 'get_plane_overlap']
+__all__=['makeGaussian', 'makeRod', 'clipped_arr', 'get_plane_overlap']
 
 import numpy as np
 
@@ -29,6 +29,12 @@ def makeGaussian(size, fwhm=3, center=None, amp=1, norm=False):
         return amp * g / np.sum(g)
     else:
         return g
+    
+
+def makeRod(size, width):
+    arr = np.zeros([size]*2)
+    arr[:, size//2-width//2 : size//2+width//2] = 1
+    return arr
 
 
 def clipped_arr(arr, thresh=0.5):
