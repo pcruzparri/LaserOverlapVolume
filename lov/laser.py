@@ -21,7 +21,7 @@ class Laser:
             self.extend(initial_depth)
             if initial_angles:
                 self.rotate(self.initial_angles)
-            elif initial_shifts:
+            if initial_shifts:
                 self.shift(self.initial_shifts)
 
     def get_arr3d(self):

@@ -8,23 +8,35 @@ from layers import *
 
 
 # Laser setup
-l1_size = 200
 l1_fwhm = 20
-l1_id = 100
+l2_fwhm = 20
+size = 200
+initial_depth = 100
 
-
-l1 = Laser(size=l1_size, fwhm=l1_fwhm, initial_depth=l1_id)
-lasers = [l1]
+l1 = Laser(size=size,
+           fwhm=l1_fwhm,
+           initial_depth=initial_depth,
+           initial_angles=[30, 0, 0],
+           initial_shifts=(0, -50, 0))
+l2 = Laser(size=size,
+           fwhm=l2_fwhm,
+           initial_depth=initial_depth,
+           initial_angles=[-30, 0, 0],
+           initial_shifts=[0, 50, 0])
+lasers = [l1, l2]
 
 
 # Layers setup
 
 layers = Layers(lasers=lasers)
-layers.add_layer(0, 200, (-15, 0, 0))
-layers.add_layer(0, 100, (15, 0, 30))
+layers.add_layer(0, 200, (15, 0, 0))
+layers.add_layer(0, 100, (25, 0, 0))
+layers.add_layer(1, 200, (-15, 0, 0))
+layers.add_layer(1, 100, (-25, 0, 0))
 
 
 plotter = Plotter()
-plotter.add_mesh(layers.lasers[0].arr3d[:, :, :l1_size//2])
+plotter.add_volume(layers.lasers[0].arr3d, cmap='Reds')
+plotter.add_volume(layers.lasers[1].arr3d, cmap='Blues')
 plotter.show_grid()
 plotter.show()
