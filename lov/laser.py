@@ -7,34 +7,32 @@ from utils import *
 
 
 class Laser:
-    def __init__(self, size, fwhm, center=None, initial_angles=(), initial_depth=0, initial_shifts=(), amp=1, norm=False):
+    def __init__(self, size, fwhm, center=None, initial_angles=(), initial_depth=0, initial_shifts=(), **kwargs):
         self.size = size
         self.fwhm = fwhm
         self.center = center
-        self.initial_angles = initial_angles
-        self.initial_depth = initial_depth
-        self.initial_shifts = initial_shifts
-        self.amp = amp
-        self.norm = norm
-        self.arr2d = makeGaussian(self.size, self.fwhm, center=self.center, amp=self.amp, norm=self.norm)
-        if initial_depth:
-            self.extend(initial_depth)
-            if initial_angles:
-                self.rotate(self.initial_angles)
-            if initial_shifts:
-                self.shift(self.initial_shifts)
+        self.angles = initial_angles if initial_angles else (0, 0, 0)
+        self.depth = initial_depth if initial_depth else 1
+        self.shifts = initial_shifts if initial_shifts else (0, 0, 0)
+        self.arr3d = None
+        self.make3d(self.depth, **kwargs)
 
     def get_arr3d(self):
         return self.arr3d
 
-    def extend(self, depth):
-        self.arr3d = np.array([self.arr2d]*depth)
+    def make3d(self, depth, **kwargs):
+        self.depth = depth
+        self.arr3d = np.array([makeGaussian(self.size, self.fwhm, self.center, **kwargs)]*depth)
+        self.rotate(self.angles)
+        self.shift(self.shifts)
 
     def rotate(self, angles):
-        for rot_ind, rot in enumerate(angles):
+        self.angles = angles
+        for rot_ind, rot in enumerate(self.angles):
             self.arr3d = r(self.arr3d, rot, axes=(rot_ind, (rot_ind+1)%3), reshape=False, mode='nearest')
 
-    def shift(self, deltas):
-        self.arr3d = s(self.arr3d, deltas)
+    def shift(self, shifts):
+        self.shifts = shifts
+        self.arr3d = s(self.arr3d, shifts)
 
     
