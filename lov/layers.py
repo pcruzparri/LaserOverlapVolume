@@ -13,25 +13,37 @@ class Layers:
             'The initialization lasers are not of the same length.'"""
         self.depths = [[li.depth for li in lj] for lj in self.lasers]
 
-    def add_layer(self, laser_index, depth, angles):
-        prev_layer = self.lasers[laser_index][-1]
-        new_layer = Laser(prev_layer.size,
+    def add_layer(self, laser_index, depth, angles, where=1):
+        assert where == 1 or where == -1, \
+            "'where' argument can only be +1 or -1"
+        if where == 1:
+            prev_layer = self.lasers[laser_index][-1]
+            new_layer = Laser(prev_layer.size,
+                              prev_layer.fwhm,
+                              initial_depth=depth,
+                              initial_angles=angles)
+            self.lasers[laser_index].append(new_layer)
+            self.depths[laser_index].append(depth)
+            self._stitch(laser_index, (-1, -2))
+        else:
+            next_layer = self.lasers[laser_index][0]
+            new_layer = Laser(prev_layer.size,
                           prev_layer.fwhm,
-                          initial_depth=depth, 
+                          initial_depth=depth,
                           initial_angles=angles)
-        self.lasers[laser_index].append(new_layer)
-        self.depths[laser_index].append(depth)
-        self._stitch(laser_index, (-1, -2))
+            self.lasers[laser_index] = [new_layer]+self.lasers[laser_index]
+            self.depths[laser_index] = [depth]+self.lasers[laser_index]
+            self._stitch(laser_index, (0, 1))
+
         #self.lasers[laser_index].arr3d = np.vstack((prev_arr, new_layer.arr3d))
-        # TODO: need to align by similar intensity if max not on both, maybe...
 
     def add_laser(self, laser):
         self.lasers.append([laser])
         self.depths.append([laser.depth])
 
     def _stitch(self, laser_index, layer_indices):
-        assert min(layer_indices)+1 == max(layer_indices) and len(layer_indices)==2, 'Layers are not continuous, ' \
-                                                                                    'or too many layers provided'
+        assert min(layer_indices)+1 == max(layer_indices) and len(layer_indices)==2, \
+            'Layers are not continuous, or too many layers provided'
         prev_arr = self.lasers[laser_index][min(layer_indices)].arr3d
         next_arr = self.lasers[laser_index][max(layer_indices)].arr3d
         stitch1 = np.ndarray.flatten(
@@ -47,7 +59,7 @@ class Layers:
         coord_shift = list(stitch2 - stitch1) if layer_indices[0] < layer_indices[1] else list(stitch1 - stitch2)
         self.lasers[laser_index][layer_indices[0]].shift([0] + coord_shift)
 
-    def set_focus(self, center):
+    def overlap_at(self, center):
         lasers_to_focus = []
         for laser in self.lasers:
             arr = np.vstack(list(map(lambda x: x.arr3d, laser)))
@@ -75,5 +87,18 @@ class Layers:
     def replace_layer(self, new_laser_layer, laser_index, layer_index):
         self.lasers[laser_index][layer_index] = new_laser_layer
 
+    def calc_overlap(self, summation='total'):
+        assert summation == 'total' or summation == 'through' or summation == 'cumsum', \
+            'Summation can only be total, through, or cumsum'
+        volume = self.layers_multiply()
+        if summation == 'cumsum':
+            return np.cumsum(volume.sum(-1).sum(-1))
+        elif summation == 'through':
+            return volume.sum(-1).sum(-1)
+        else:
+            return np.sum(volume)
+
+
     def check_continuity(self):
-        pass  
+        pass
+

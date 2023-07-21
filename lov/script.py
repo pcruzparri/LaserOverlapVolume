@@ -47,10 +47,11 @@ layers.add_layer(2, layer2_depth, (0, 0, 0))
 layers.add_layer(2, layer3_depth, (0, 0, 0))'''
 
 sum_out = layers.layers_sum()
-layers.set_focus((130, size//2, size//2))
-print('overlap volume' + np.sum(layers.layers_multiply())
+layers.overlap_at((130, size//2, size//2))
+print(f'overlap volume {layers.calc_overlap(summation="cumsum")}')
 
-opacity = [0,0.5,1,1]
+# Visualization with Pyvista
+opacity = [0, 0.5, 1, 1]
 plotter = Plotter(shape=(1, 2))
 plotter.set_background('gray')
 plotter.subplot(0, 0)
@@ -60,7 +61,6 @@ plotter.add_volume(np.where(sum_out >= 1, 1, sum_out),
                    opacity=opacity)
 plotter.show_grid()
 
-layers.set_focus((150, size//2, size//2))
 plotter.subplot(0, 1)
 plotter.add_volume(layers.layers_sum(),
                    cmap='Greens',
